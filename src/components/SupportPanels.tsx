@@ -3,7 +3,6 @@ import type { GameState } from '../engine/types';
 import type { LessonId } from './TrainingLesson';
 import RegimeComparison from './RegimeComparison';
 import WorkflowChecklist from './WorkflowChecklist';
-import DecisionCoach from './DecisionCoach';
 import PeriodHeatmap from './PeriodHeatmap';
 import ForwardExposure from './ForwardExposure';
 import CommitmentWarnings from './CommitmentWarnings';
@@ -13,14 +12,12 @@ import RevenueAttribution from './RevenueAttribution';
 import MistakePatterns from './MistakePatterns';
 import Gradebook from './Gradebook';
 import TradeJournal from './TradeJournal';
-import ExplainThisScreen from './ExplainThisScreen';
 import BacktestSummary from './BacktestSummary';
 import ModelComparison from './ModelComparison';
 import FrequencyResponsePanel from './FrequencyResponsePanel';
 import ProgressPersistence from './ProgressPersistence';
 import ScenarioExamSelector from './ScenarioExamSelector';
 import ProductStatus from './ProductStatus';
-import LessonAssessment from './LessonAssessment';
 
 type SupportTab = 'coach' | 'risk' | 'review' | 'advanced';
 type TrainingLevel = 'beginner' | 'trader' | 'quant';
@@ -29,7 +26,6 @@ interface Props {
   state: GameState;
   lessonId: LessonId;
   assessmentMode?: boolean;
-  showExplain?: boolean;
   level?: TrainingLevel;
   compact?: boolean;
 }
@@ -45,7 +41,6 @@ export default function SupportPanels({
   state,
   lessonId,
   assessmentMode = false,
-  showExplain = false,
   level = 'trader',
   compact = false,
 }: Props) {

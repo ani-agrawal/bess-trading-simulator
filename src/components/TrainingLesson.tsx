@@ -108,7 +108,7 @@ const TRAINING_TOUR_STEPS: TutorialStep[] = [
   },
   {
     title: 'Start the Lesson',
-    content: 'Now follow the mission card one step at a time. If the screen feels too complex, switch to Beginner or press I’m confused.',
+    content: 'Now follow the mission card one step at a time. If the screen feels too complex, switch to Beginner.',
     target: null,
   },
 ];
@@ -367,13 +367,11 @@ function LessonProgress({ lessonId, onSelectLesson }: { lessonId: LessonId; onSe
 function LessonHeader({
   lessonId, state, dataSource, onSelectLesson, onOpenSandbox,
   onTogglePause, onSetSpeed, onStepForward, onReset,
-  level, onSetLevel, confused, onToggleConfused,
+  level, onSetLevel,
   assessmentMode, onToggleAssessmentMode, onStartTour, onPlayScenario,
 }: Pick<Props, 'lessonId' | 'state' | 'dataSource' | 'onSelectLesson' | 'onOpenSandbox' | 'onTogglePause' | 'onSetSpeed' | 'onStepForward' | 'onReset' | 'onPlayScenario'> & {
   level: TrainingLevel;
   onSetLevel: (level: TrainingLevel) => void;
-  confused: boolean;
-  onToggleConfused: () => void;
   assessmentMode: boolean;
   onToggleAssessmentMode: () => void;
   onStartTour: () => void;
@@ -383,7 +381,7 @@ function LessonHeader({
   return (
     <header className="app-header">
       <div className="header-left">
-        <Icon size={22} className="logo-icon" />
+        <span className="logo-icon"><Icon size={22} /></span>
         <h1>{meta.title}</h1>
         <span className="mode-badge">{meta.subtitle}</span>
         <span className={`data-badge ${dataSource}`}>
@@ -460,9 +458,8 @@ function CoachPanel({ state, lessonId }: { state: GameState; lessonId: LessonId 
   );
 }
 
-function SideStack({ props, lessonId, includeStrategy = false, assessmentMode = false }: {
+function SideStack({ props, includeStrategy = false, assessmentMode = false }: {
   props: Props;
-  lessonId: LessonId;
   includeStrategy?: boolean;
   assessmentMode?: boolean;
 }) {
@@ -620,7 +617,6 @@ function MissionWalkthrough({
   onNext,
   onFinish,
   onSelectLesson,
-  confused,
   assessmentMode,
 }: {
   lessonId: LessonId;
@@ -630,7 +626,6 @@ function MissionWalkthrough({
   onNext: () => void;
   onFinish: () => void;
   onSelectLesson: (id: LessonId) => void;
-  confused: boolean;
   assessmentMode: boolean;
 }) {
   const steps = MISSION_STEPS[lessonId];
@@ -733,7 +728,6 @@ function TrainingCompletePanel({ props, onBackToLessons }: { props: Props; onBac
       <SupportPanels
         state={props.state}
         lessonId={5}
-        showExplain
         level="trader"
       />
     </section>
@@ -744,7 +738,6 @@ export default function TrainingLesson(props: Props) {
   const { lessonId, state, dataSource, onSelectLesson, onOpenSandbox } = props;
   const [stepByLesson, setStepByLesson] = useState<Record<LessonId, number>>({ 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 });
   const [level, setLevel] = useState<TrainingLevel>('beginner');
-  const [confused, setConfused] = useState(false);
   const [assessmentMode, setAssessmentMode] = useState(false);
   const [examStartedAt, setExamStartedAt] = useState<number | null>(null);
   const [trainingComplete, setTrainingComplete] = useState(false);
@@ -810,8 +803,6 @@ export default function TrainingLesson(props: Props) {
         onReset={props.onReset}
         level={level}
         onSetLevel={setLevel}
-        confused={confused}
-        onToggleConfused={() => setConfused(prev => !prev)}
         assessmentMode={assessmentMode}
         onToggleAssessmentMode={toggleExamMode}
         onStartTour={startTrainingTour}
@@ -827,7 +818,6 @@ export default function TrainingLesson(props: Props) {
         onNext={stepForwardMission}
         onFinish={finishTraining}
         onSelectLesson={selectLesson}
-        confused={confused}
         assessmentMode={assessmentMode}
       />
       <LessonSummaryPanel
@@ -858,7 +848,6 @@ export default function TrainingLesson(props: Props) {
                   state={state}
                   lessonId={lessonId}
                   assessmentMode={assessmentMode}
-                  showExplain={level === 'beginner' || confused}
                   level={level}
                 />
               </div>
@@ -868,11 +857,10 @@ export default function TrainingLesson(props: Props) {
         <aside className="training-side" id="training-side-stack">
           <SideStack
             props={props}
-            lessonId={lessonId}
             includeStrategy={lessonId === 5 && focus !== 'strategy' && state.mode === 'arbitrage'}
             assessmentMode={assessmentMode}
           />
-          {!assessmentMode && (level !== 'beginner' || confused || focus === 'revenue' || focus === 'analysis') && <LessonQuiz lessonId={lessonId} />}
+          {!assessmentMode && (level !== 'beginner' || focus === 'revenue' || focus === 'analysis') && <LessonQuiz lessonId={lessonId} />}
         </aside>
       </main>
       <Tutorial

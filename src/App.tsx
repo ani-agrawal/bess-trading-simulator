@@ -151,7 +151,7 @@ export default function App() {
                 onConfigureBattery={configureBattery}
               />
               <TradeExplainer battery={state.battery} currentPrice={state.currentPrice} priceHistory={state.priceHistory} />
-              <SupportPanels state={state} lessonId={1} showExplain compact />
+              <SupportPanels state={state} lessonId={1} compact />
             </div>
             <div className="grid-revenue">
               <DecisionCoach state={state} />
@@ -201,7 +201,7 @@ export default function App() {
                 battery={state.battery}
                 onSubmitBids={placeDayAheadBids}
               />
-              <SupportPanels state={state} lessonId={2} showExplain compact />
+              <SupportPanels state={state} lessonId={2} compact />
             </div>
             <div className="grid-da-side">
               <DecisionCoach state={state} />
@@ -226,7 +226,7 @@ export default function App() {
                 onIntradayCharge={intradayCharge}
                 onIntradayDischarge={intradayDischarge}
               />
-              <SupportPanels state={state} lessonId={3} showExplain compact />
+              <SupportPanels state={state} lessonId={3} compact />
             </div>
             <div className="grid-da-side">
               <DecisionCoach state={state} />
@@ -252,7 +252,7 @@ export default function App() {
                 dayAhead={state.dayAhead}
                 analysis={state.analysis}
               />
-              <SupportPanels state={state} lessonId={4} showExplain compact />
+              <SupportPanels state={state} lessonId={4} compact />
             </div>
             <div className="grid-analysis-side">
               <DecisionCoach state={state} />

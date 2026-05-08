@@ -28,7 +28,6 @@ export function getDecisionCoach(state: GameState): DecisionCoach {
   const future = state.dayAhead.forecastPrices.slice(currentSp + 1).filter(Number.isFinite);
   const futureHigh = future.length ? Math.max(...future) : currentPrice;
   const futureLow = future.length ? Math.min(...future) : currentPrice;
-  const efficiency = state.battery.config.efficiencyPct / 100;
   const maxCharge = getMaxChargeableMw(state.battery);
   const maxDischarge = getMaxDischargeableMw(state.battery);
   const socPct = state.battery.socPct;
