@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { DayAheadBid, DayAheadState } from '../engine/types';
 import { OrderSide } from '../engine/types';
 import type { BatteryState } from '../engine/battery';
-import { hoursUntilGateClosure } from '../engine/clock';
+import { hoursUntilGateClosure, getGateClosureTime, formatHour } from '../engine/clock';
 import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import HelpIcon from './HelpIcon';
 import { CheckCircle } from 'lucide-react';
@@ -19,6 +19,7 @@ export default function DayAheadAuction({ dayAhead, currentTime, battery, onSubm
   const [bids, setBids] = useState<{ [period: number]: { side: string; volume: string; price: string } }>({});
   const [submitted, setSubmitted] = useState(false);
   const gateHours = hoursUntilGateClosure(currentTime);
+  const gateTimeUtc = formatHour(getGateClosureTime(currentTime));
 
   // Calculate price thresholds to determine charge vs discharge hints
   const sortedPrices = [...forecastPrices].filter(p => p !== 0).sort((a, b) => a - b);
@@ -93,7 +94,7 @@ export default function DayAheadAuction({ dayAhead, currentTime, battery, onSubm
       <div className="da-status-bar">
         <div className="da-gate">
           {isAuctionOpen ? (
-            <span className="gate-open">Auction OPEN — Gate closes in {gateHours}h</span>
+            <span className="gate-open">Auction OPEN — Gate closes at {gateTimeUtc} UTC ({gateHours}h)</span>
           ) : (
             <span className="gate-closed">Auction CLOSED — Reviewing results</span>
           )}

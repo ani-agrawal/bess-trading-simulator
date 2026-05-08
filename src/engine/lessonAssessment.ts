@@ -50,8 +50,8 @@ export function assessLesson(state: GameState, lessonId: AssessmentLessonId): Le
       },
       {
         label: 'Knows spread matters',
-        passed: spread > 0 || state.battery.cycleLog.length < 2,
-        evidence: state.battery.cycleLog.length < 2 ? 'Need both sides to calculate spread.' : `Realised spread is £${spread.toFixed(2)}/MWh.`,
+        passed: hasPhysicalTrade(state, 'charge') && hasPhysicalTrade(state, 'discharge') && spread > 0,
+        evidence: !hasPhysicalTrade(state, 'charge') || !hasPhysicalTrade(state, 'discharge') ? 'Need both charge and discharge to calculate spread.' : `Realised spread is £${spread.toFixed(2)}/MWh.`,
       },
       ...common,
     ],
@@ -111,7 +111,7 @@ export function assessLesson(state: GameState, lessonId: AssessmentLessonId): Le
     ],
     5: [
       {
-        label: 'Changed revenue-stack mode',
+        label: 'Explored a different strategy mode',
         passed: state.mode !== 'arbitrage',
         evidence: `Current mode: ${state.mode.replace(/_/g, ' ')}.`,
       },

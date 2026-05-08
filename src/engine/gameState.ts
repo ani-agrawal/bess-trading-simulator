@@ -71,7 +71,15 @@ export function tickGameState(state: GameState): GameState {
   if (newClock.currentTime === gs.clock.currentTime) return gs;
 
   const priceGenState = gs._priceGenState ?? createPriceGenerator();
-  const { price: newPrice, newState: newPriceGen } = generateNextHour(priceGenState, newClock.currentTime);
+  const { price: syntheticPrice, newState: newPriceGen } = generateNextHour(priceGenState, newClock.currentTime);
+
+  // Use real SIP outturn price when live data is available for this period
+  const currentPeriod_ = getSettlementPeriod(newClock.currentTime) - 1;
+  const liveSip = gs.dayAhead.sipOutturn[currentPeriod_];
+  const hasLivePrice = liveSip !== undefined && liveSip !== 0;
+  const newPrice = hasLivePrice
+    ? { ...syntheticPrice, price: liveSip, basePrice: gs.dayAhead.forecastPrices[currentPeriod_] ?? syntheticPrice.basePrice }
+    : syntheticPrice;
 
   const event = maybeGenerateEvent(newClock.currentTime, newPrice, newPriceGen.tickCount);
   const newEvents = event ? [event, ...gs.events].slice(0, 50) : gs.events;
@@ -440,12 +448,21 @@ export function submitBmOfferAction(
 export function loadScenario(state: GameState, scenario: { daPrices: number[]; sipPrices: number[]; niv: number[]; date: string }): GameState {
   const startDate = new Date(scenario.date + 'T00:00:00Z');
   const clock = createClock(startDate);
+  const firstSip = scenario.sipPrices[0] ?? 0;
+  const initialPrice = firstSip !== 0 ? {
+    timestamp: clock.currentTime,
+    price: firstSip,
+    demandMw: 30000,
+    renewablePct: 0.25,
+    basePrice: scenario.daPrices[0] ?? firstSip,
+    eventImpact: 0,
+  } : null;
 
   return {
     ...state,
     clock: { ...clock, speed: 'slow' },
-    priceHistory: [],
-    currentPrice: null,
+    priceHistory: initialPrice ? [initialPrice] : [],
+    currentPrice: initialPrice,
     battery: createBattery(state.battery.config),
     trades: [],
     events: [],

@@ -11,6 +11,7 @@ import IntradayTrading from './IntradayTrading';
 import PostTradeAnalysis from './PostTradeAnalysis';
 import NewsFeed from './NewsFeed';
 import StrategyGuide from './StrategyGuide';
+import ScenarioSelector from './ScenarioSelector';
 import MarketSignalPanel from './MarketSignalPanel';
 import PositionBook from './PositionBook';
 import AcademyRoadmap from './AcademyRoadmap';
@@ -20,6 +21,7 @@ import ReplayTimeline from './ReplayTimeline';
 import PostTradeExplainer from './PostTradeExplainer';
 import BmTraining from './BmTraining';
 import LessonAssessment from './LessonAssessment';
+import ExplainThisScreen from './ExplainThisScreen';
 import DailyBriefing from './DailyBriefing';
 import CapacityAllocationBoard from './CapacityAllocationBoard';
 import EndOfDayReport from './EndOfDayReport';
@@ -34,6 +36,7 @@ import ThemeToggle from './ThemeToggle';
 import Tutorial, { type TutorialStep } from './Tutorial';
 import AboutProject from './AboutProject';
 import TradeExplainer from './TradeExplainer';
+import type { HistoricalDay } from '../data/historicalDays';
 import type { TrainingLevel } from '../data/curriculum';
 import { scoreMission } from '../engine/missionScoring';
 import { assessLesson } from '../engine/lessonAssessment';
@@ -64,7 +67,7 @@ const LESSONS: LessonMeta[] = [
   { id: 2, title: 'Day-Ahead', subtitle: '48-period schedule', icon: BarChart3 },
   { id: 3, title: 'Intraday', subtitle: 'Re-optimise positions', icon: LineChart },
   { id: 4, title: 'Imbalance', subtitle: 'SIP and NIV review', icon: Brain },
-  { id: 5, title: 'Revenue Stack', subtitle: 'BM and services context', icon: Layers },
+  { id: 5, title: 'Market Context', subtitle: 'BM, frequency, and triad overview', icon: Layers },
 ];
 
 const TRAINING_TOUR_STEPS: TutorialStep[] = [
@@ -75,7 +78,7 @@ const TRAINING_TOUR_STEPS: TutorialStep[] = [
   },
   {
     title: 'Lesson Roadmap',
-    content: 'These are the five lesson chapters. Use them like a course menu: Arbitrage first, then Day-Ahead, Intraday, Imbalance, and Revenue Stack.',
+    content: 'These are the five lesson chapters. Use them like a course menu: Arbitrage first, then Day-Ahead, Intraday, Imbalance, and Market Context.',
     target: 'training-progress',
   },
   {
@@ -254,38 +257,30 @@ const MISSION_STEPS: Record<LessonId, MissionStep[]> = {
   ],
   5: [
     {
-      title: 'Read market context',
-      objective: 'Review news/events and current battery state before allocating capacity.',
-      briefing: 'Professional BESS trading is capacity allocation. Each SP should have a reason: energy, reserve, BM optionality, or idling.',
-      focus: 'news',
-      completeWhen: () => true,
-      hint: 'Scan events, SoC, and price context before choosing a service.',
-    },
-    {
-      title: 'Choose a stack component',
-      objective: 'Activate a strategy mode and observe how events and revenue effects change.',
-      briefing: 'You are now moving from single-market training into portfolio optimisation. Keep asking: what is the best use of each MW right now?',
+      title: 'Explore revenue streams',
+      objective: 'Switch to a different strategy mode and read what it does.',
+      briefing: 'Real BESS assets earn from multiple services — BM, frequency response, capacity market, and triad avoidance. Pick a mode to see how the simulator context changes. These are illustrative — full simulation is coming in a future update.',
       focus: 'strategy',
       completeWhen: state => state.mode !== 'arbitrage',
-      hint: 'Open Strategies, pick BM, Frequency Response, Intraday, or Revenue Stacking.',
+      hint: 'Open Strategies and pick any mode other than Arbitrage.',
       required: true,
     },
     {
-      title: 'Submit a BM price',
-      objective: 'Submit one bid or offer to the Balancing Mechanism.',
-      briefing: 'In BM you do not just click charge or discharge. You tell the system operator the price at which you are willing to move, then they may accept it.',
+      title: 'Try a BM submission',
+      objective: 'Submit one bid or offer to the Balancing Mechanism panel.',
+      briefing: 'In a real BM, you submit a price and NGESO may accept it. Here you can see the mechanics, but acceptance and physical dispatch are not yet wired up. This will be functional in a future update.',
       focus: 'bm',
       completeWhen: state => (state.bm?.offers.length ?? 0) > 0,
-      hint: 'Use Offer to discharge at a premium, or Bid to charge at a cheap price.',
+      hint: 'Use Offer to set a discharge price, or Bid to set a charge price.',
       required: true,
     },
     {
-      title: 'Monitor stacked performance',
-      objective: 'Step forward and compare revenue, events, and analysis after changing mode.',
-      briefing: 'Revenue stacking is not about doing everything. It is about avoiding conflicts and assigning scarce capacity to the highest-value service.',
+      title: 'Review what you have learned',
+      objective: 'Step forward and observe events, then reflect on the four lessons so far.',
+      briefing: 'You have covered spot arbitrage, day-ahead scheduling, intraday revision, and imbalance analysis. These are the core skills. The services in this lesson add revenue but depend on the same fundamentals.',
       focus: 'stack',
       completeWhen: state => state.events.length > 0 || Boolean(state.analysis),
-      hint: 'Step forward after selecting a mode and watch events, revenue, and battery state.',
+      hint: 'Step forward and watch the events that each mode generates.',
     },
   ],
 };
@@ -308,6 +303,7 @@ interface Props {
   onIntradayDischarge: (sp: number, mw: number) => void;
   onSubmitBmOffer: (period: number, direction: BmDirection, mw: number, price: number) => void;
   onSetMode: (mode: GameMode) => void;
+  onPlayScenario: (day: HistoricalDay) => void;
 }
 
 function buildFeedback(state: GameState, lessonId: LessonId): string[] {
@@ -372,8 +368,8 @@ function LessonHeader({
   lessonId, state, dataSource, onSelectLesson, onOpenSandbox,
   onTogglePause, onSetSpeed, onStepForward, onReset,
   level, onSetLevel, confused, onToggleConfused,
-  assessmentMode, onToggleAssessmentMode, onStartTour,
-}: Pick<Props, 'lessonId' | 'state' | 'dataSource' | 'onSelectLesson' | 'onOpenSandbox' | 'onTogglePause' | 'onSetSpeed' | 'onStepForward' | 'onReset'> & {
+  assessmentMode, onToggleAssessmentMode, onStartTour, onPlayScenario,
+}: Pick<Props, 'lessonId' | 'state' | 'dataSource' | 'onSelectLesson' | 'onOpenSandbox' | 'onTogglePause' | 'onSetSpeed' | 'onStepForward' | 'onReset' | 'onPlayScenario'> & {
   level: TrainingLevel;
   onSetLevel: (level: TrainingLevel) => void;
   confused: boolean;
@@ -385,47 +381,47 @@ function LessonHeader({
   const meta = LESSONS.find(l => l.id === lessonId) ?? LESSONS[0];
   const Icon = meta.icon;
   return (
-    <header className="training-header">
-      <div className="training-title">
-        <Icon size={22} />
-        <div>
-          <h1>{meta.title}</h1>
-          <span>{meta.subtitle}</span>
-        </div>
+    <header className="app-header">
+      <div className="header-left">
+        <Icon size={22} className="logo-icon" />
+        <h1>{meta.title}</h1>
+        <span className="mode-badge">{meta.subtitle}</span>
         <span className={`data-badge ${dataSource}`}>
           {dataSource === 'live' ? 'LIVE DATA' : dataSource === 'loading' ? 'LOADING...' : 'SYNTHETIC'}
         </span>
       </div>
-      <MarketClock
-        currentTime={state.clock.currentTime}
-        isPaused={state.clock.isPaused}
-        speed={state.clock.speed}
-        onTogglePause={onTogglePause}
-        onSetSpeed={onSetSpeed}
-        onStepForward={onStepForward}
-        onReset={onReset}
-      />
-      <div className="training-actions">
+      <div className="header-center">
+        <MarketClock
+          currentTime={state.clock.currentTime}
+          isPaused={state.clock.isPaused}
+          speed={state.clock.speed}
+          onTogglePause={onTogglePause}
+          onSetSpeed={onSetSpeed}
+          onStepForward={onStepForward}
+          onReset={onReset}
+        />
+      </div>
+      <div className="header-right">
         <select id="training-level-select" className="input input-sm training-level-select" value={level} onChange={event => onSetLevel(event.target.value as TrainingLevel)}>
           <option value="beginner">Beginner</option>
           <option value="trader">Trader</option>
           <option value="quant">Quant</option>
         </select>
         <button className={`btn ${assessmentMode ? 'btn-sell' : ''}`} onClick={onToggleAssessmentMode}>
-          <EyeOff size={14} /> Exam Mode
+          <EyeOff size={14} /> Exam
         </button>
-        <button className={`btn ${confused ? 'btn-buy' : ''}`} onClick={onToggleConfused} disabled={assessmentMode}>
-          <HelpCircle size={14} /> I'm confused
-        </button>
-        <button className="btn" onClick={onStartTour}>
+        <LessonAssessment state={state} lessonId={lessonId} />
+        <ExplainThisScreen lessonId={lessonId} />
+        <button className="btn" onClick={onStartTour} title="Tour">
           <HelpCircle size={14} /> Tour
         </button>
+        <ScenarioSelector onSelectScenario={onPlayScenario} />
         <AcademyRoadmap level={level} currentLesson={lessonId} onSelectLesson={onSelectLesson} />
         <button className="btn" onClick={() => onSelectLesson(Math.min(5, lessonId + 1) as LessonId)} disabled={lessonId === 5}>
-          Next Lesson
+          Next <ChevronRight size={14} />
         </button>
-        <ThemeToggle />
         <AboutProject />
+        <ThemeToggle />
         <button className="btn btn-buy" onClick={onOpenSandbox}>Sandbox</button>
       </div>
     </header>
@@ -472,13 +468,12 @@ function SideStack({ props, lessonId, includeStrategy = false, assessmentMode = 
 }) {
   return (
     <>
-      {!assessmentMode && <DailyBriefing state={props.state} />}
-      <ScenarioObjective state={props.state} />
-      {!assessmentMode && <DecisionCoach state={props.state} />}
-      <RiskLimits state={props.state} />
       {includeStrategy && <StrategyGuide currentMode={props.state.mode} onSelectMode={props.onSetMode} />}
-      <LessonAssessment state={props.state} lessonId={lessonId} />
-      {!assessmentMode && <CoachPanel state={props.state} lessonId={lessonId} />}
+      {!assessmentMode && <DecisionCoach state={props.state} />}
+      <NewsFeed events={props.state.events} />
+      {!assessmentMode && <DailyBriefing state={props.state} />}
+      <RiskLimits state={props.state} />
+      <ScenarioObjective state={props.state} />
     </>
   );
 }
@@ -589,7 +584,6 @@ function LessonMain({ props, lessonId, focus, assessmentMode, level }: {
           <p>Choose which revenue stream you want to practise. The active mode changes the events and payments the simulator generates.</p>
           <StrategyGuide currentMode={state.mode} onSelectMode={props.onSetMode} />
         </div>
-        <NewsFeed events={state.events} />
       </>
     );
   }
@@ -661,29 +655,30 @@ function MissionWalkthrough({
 
   return (
     <section className={`mission-panel focus-${step.focus}`} id="mission-walkthrough">
-      <div className="mission-kicker">Lesson {lessonId} · Step {stepIndex + 1}/{steps.length}</div>
-      <h2>{step.title}</h2>
-      {assessmentMode ? (
-        <p className="assessment-copy">No hints. Complete the objective using the trading tools, then review your score.</p>
-      ) : (
-        <p>{step.briefing}</p>
-      )}
-      {confused && !assessmentMode && (
-        <div className="confused-box">
-          <strong>Simple version:</strong> Follow the objective, use the highlighted panel, and ignore every other number for now.
+      <div className="mission-left">
+        <div className="mission-left-top">
+          <div className="mission-kicker">Lesson {lessonId} · Step {stepIndex + 1}/{steps.length}</div>
+          <h2>{step.title}</h2>
         </div>
-      )}
-      <div className="mission-objective">
-        <Target size={16} />
-        <span>{step.objective}</span>
+        {assessmentMode ? (
+          <span className="mission-briefing assessment-copy">No hints.</span>
+        ) : (
+          <span className="mission-briefing">{step.briefing}</span>
+        )}
       </div>
-      <div className={`mission-status ${isComplete ? 'complete' : ''}`}>
-        {isComplete ? <CheckCircle size={15} /> : <Play size={15} />}
-        <span>{isComplete ? 'Objective clear' : assessmentMode ? 'No hint available in assessment mode.' : step.hint}</span>
+      <div className="mission-center">
+        <div className="mission-objective">
+          <Target size={14} />
+          <span>{step.objective}</span>
+        </div>
+        <div className={`mission-status ${isComplete ? 'complete' : ''}`}>
+          {isComplete ? <CheckCircle size={13} /> : <Play size={13} />}
+          <span>{isComplete ? 'Objective clear' : assessmentMode ? 'Complete the objective.' : step.hint}</span>
+        </div>
       </div>
       <div className="mission-actions">
         <button className="btn" onClick={onBack} disabled={lessonId === 1 && stepIndex === 0}>
-          <ChevronLeft size={14} /> Back
+          <ChevronLeft size={14} />
         </button>
         <button className={`btn ${isComplete ? 'btn-buy' : ''}`} onClick={handleNext} disabled={!canAdvance}>
           {nextLabel} <ChevronRight size={14} />
@@ -820,6 +815,7 @@ export default function TrainingLesson(props: Props) {
         assessmentMode={assessmentMode}
         onToggleAssessmentMode={toggleExamMode}
         onStartTour={startTrainingTour}
+        onPlayScenario={props.onPlayScenario}
       />
       <LessonProgress lessonId={lessonId} onSelectLesson={selectLesson} />
 
@@ -873,7 +869,7 @@ export default function TrainingLesson(props: Props) {
           <SideStack
             props={props}
             lessonId={lessonId}
-            includeStrategy={lessonId === 5 && focus !== 'strategy'}
+            includeStrategy={lessonId === 5 && focus !== 'strategy' && state.mode === 'arbitrage'}
             assessmentMode={assessmentMode}
           />
           {!assessmentMode && (level !== 'beginner' || confused || focus === 'revenue' || focus === 'analysis') && <LessonQuiz lessonId={lessonId} />}

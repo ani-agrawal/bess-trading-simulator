@@ -23,7 +23,7 @@ export default function AboutProject() {
             <div className="about-grid">
               <div>
                 <strong>Good for</strong>
-                <span>Learning BESS dispatch, scheduling, intraday revisions, SIP/NIV review, and revenue-stack trade-offs.</span>
+                <span>Learning BESS dispatch, scheduling, intraday revisions, SIP/NIV review, and market context.</span>
               </div>
               <div>
                 <strong>Simplified</strong>

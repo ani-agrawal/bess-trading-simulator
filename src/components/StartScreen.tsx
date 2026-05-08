@@ -1,5 +1,6 @@
-import { BarChart3, Battery, GraduationCap, Play, ShieldCheck } from 'lucide-react';
+import { Battery, GraduationCap, Play, BarChart3, Clock, TrendingUp, ShieldCheck } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
+import AboutProject from './AboutProject';
 
 interface Props {
   onStartTraining: () => void;
@@ -14,7 +15,7 @@ export default function StartScreen({ onStartTraining, onOpenSandbox }: Props) {
           <Battery size={34} className="logo-icon" />
           <div>
             <h1>BESS Trading Simulator</h1>
-            <p>Learn GB battery trading from first principles through guided missions, market scenarios, and post-trade review.</p>
+            <p>Learn GB battery energy storage trading from first principles. Guided missions, real Elexon market data, and post-trade review.</p>
           </div>
         </div>
         <div className="start-actions">
@@ -25,33 +26,39 @@ export default function StartScreen({ onStartTraining, onOpenSandbox }: Props) {
             <Play size={17} /> Open Sandbox
           </button>
           <ThemeToggle />
+          <AboutProject />
         </div>
       </section>
 
       <section className="start-path">
         <div className="start-card">
           <GraduationCap size={18} />
-          <h2>Recommended Path</h2>
-          <ol>
-            <li>Arbitrage: price, battery, charge, discharge.</li>
-            <li>Day-Ahead: build a 48-period schedule.</li>
-            <li>Intraday: revise the plan as information changes.</li>
-            <li>Imbalance: compare DA, SIP, and NIV outturn.</li>
-            <li>Revenue Stack: BM and flexibility context.</li>
+          <h2>Guided Learning Path</h2>
+          <ol className="feature-steps">
+            <li><strong>Arbitrage</strong> — charge low, discharge high</li>
+            <li><strong>Day-Ahead</strong> — build a 48-period schedule</li>
+            <li><strong>Intraday</strong> — revise as forecasts update</li>
+            <li><strong>Imbalance</strong> — read SIP, NIV, and outturn</li>
+            <li><strong>Market Context</strong> — BM, frequency response, and triad overview</li>
           </ol>
         </div>
         <div className="start-card">
           <BarChart3 size={18} />
-          <h2>What You Practise</h2>
-          <p>Settlement periods, MW vs MWh, SoC, price spreads, forecast error, position risk, and post-trade analysis.</p>
+          <h2>Real Market Data</h2>
+          <p>Loads actual GB settlement prices, day-ahead forecasts, and NIV from the Elexon BMRS API. Falls back to synthetic data if the API is unavailable.</p>
+          <Clock size={18} style={{ marginTop: 18 }} />
+          <h2>Half-Hourly Settlement</h2>
+          <p>48 settlement periods per day, MW vs MWh, SoC constraints, round-trip efficiency, gate closure at 09:20 UK time — the mechanics that matter.</p>
+          <TrendingUp size={18} style={{ marginTop: 18 }} />
+          <h2>Decision Coach</h2>
+          <p>Live guidance that adapts to current price, battery state, and forecast. Tells you what to do, why, and what the risk is — then grades your trades.</p>
         </div>
         <div className="start-card">
           <ShieldCheck size={18} />
           <h2>Public Demo</h2>
-          <p>This is an educational simulator. It uses simplified market mechanics, public Elexon data where available, and synthetic fallback data.</p>
+          <p>An educational simulator for learning how battery trading works. Not a market replica, operational trading software, or intended for live trading decisions.</p>
         </div>
       </section>
     </main>
   );
 }
-

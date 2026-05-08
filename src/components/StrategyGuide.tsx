@@ -29,7 +29,7 @@ const strategies: Strategy[] = [
     keyMetrics: 'Available spread, recent percentile rank, volatility, cycles per day, revenue per cycle, £/MW/day.',
     tip: 'Use the Market Signal panel rather than fixed times. A midday solar dip, wind-driven overnight negative price, or unexpected scarcity spike can all be the right trade depending on relative price and SoC.',
     difficulty: 'Beginner',
-    realWorld: 'Every BESS operator does arbitrage. It\'s the baseline revenue stream. Habitat Energy\'s AI optimises charge/discharge timing beyond simple peak/trough.',
+    realWorld: 'Every BESS operator does arbitrage. It\'s the baseline revenue stream. Professional optimisers use AI to time charge/discharge decisions beyond simple peak/trough.',
   },
   {
     mode: GameMode.NIV_CHASING,
@@ -51,7 +51,7 @@ const strategies: Strategy[] = [
     keyMetrics: 'ID profit vs DA-only profit, number of position changes, average improvement per trade.',
     tip: 'The first hour of ID trading after DA results often has the best opportunities — the market hasn\'t fully digested the new information yet. Also watch the 1-hour-ahead gate closure for last-minute price moves.',
     difficulty: 'Intermediate',
-    realWorld: 'Intraday liquidity in GB has grown significantly. Automated trading algorithms continuously adjust positions. Habitat Energy and others use ML to forecast intraday price movements.',
+    realWorld: 'Intraday liquidity in GB has grown significantly. Automated trading algorithms continuously adjust positions. Professional optimisers use ML to forecast intraday price movements.',
   },
   {
     mode: GameMode.TRIAD_MANAGEMENT,
@@ -88,14 +88,14 @@ const strategies: Strategy[] = [
   },
   {
     mode: GameMode.REVENUE_STACKING,
-    name: 'Revenue Stacking',
-    tagline: 'Combine everything — the professional approach',
-    description: 'Real BESS optimisers don\'t pick one strategy. They dynamically allocate battery capacity across DA, ID, BM, frequency response, and Triad management to maximise total revenue from every settlement period.',
+    name: 'Market Context',
+    tagline: 'Overview of all revenue streams',
+    description: 'Real BESS optimisers dynamically allocate battery capacity across DA, ID, BM, frequency response, and Triad management. This mode shows the full context. Full simulation of combined services is coming in a future update.',
     howItWorks: 'Example day: 00:00-06:00 → DC frequency response (availability payments). 06:00-07:00 → charge on DA (cheap morning prices). 07:00-16:00 → DC frequency response. 16:00-19:00 → discharge on DA (peak prices, Triad cover). 19:00-00:00 → BM offers + ID trading. Each hour is optimised across all available markets.',
     keyMetrics: 'Total blended revenue (£/MW/day), capacity utilisation across services, revenue mix (% from each market).',
-    tip: 'Start by mastering arbitrage, then add frequency response during low-spread hours. Layer in BM as you understand dispatch patterns. Triad management is seasonal but critical Nov-Feb. The goal is zero idle hours — every SP should earn from some market.',
+    tip: 'Start by mastering arbitrage, then add frequency response during low-spread hours. Layer in BM as you understand dispatch patterns. Triad management is seasonal but critical Nov-Feb.',
     difficulty: 'Advanced',
-    realWorld: 'Habitat Energy, Modo Energy, and others use AI/ML to optimise this in real-time. A well-stacked battery earns £200-350/MW/day. The best operators earn 30-50% more than those running pure arbitrage. This is the target skill for a professional BESS trader.',
+    realWorld: 'Professional BESS optimisers use AI/ML to allocate capacity across markets in real-time. A well-stacked battery earns £200-350/MW/day. The best operators earn 30-50% more than those running pure arbitrage.',
   },
 ];
 
@@ -118,7 +118,7 @@ export default function StrategyGuide({ currentMode, onSelectMode }: Props) {
             </div>
             <p className="strategy-intro">
               The main revenue strategies for GB grid-scale batteries.
-              Learn each one, then combine them in Revenue Stacking mode — that's what professional traders do.
+              Learn each one, then explore Market Context mode to see how they combine.
             </p>
 
             <div className="strategy-list">

@@ -22,6 +22,7 @@ export function useGameState() {
       return {
         ...saved,
         clock: { ...saved.clock, isPaused: true, speed: 'slow' },
+        tutorial: { currentStep: 0, isActive: true, completed: false },
         bm: saved.bm ?? { offers: [], accepted: [] },
       };
     }
@@ -38,6 +39,15 @@ export function useGameState() {
   const applyElexonData = (dayData: ElexonDayData) => {
     const dataDate = new Date(dayData.date + 'T00:00:00Z');
     const t = dataDate.getTime();
+    const firstSip = dayData.sipPrices[0] ?? 0;
+    const initialPrice = {
+      timestamp: t,
+      price: firstSip,
+      demandMw: 30000,
+      renewablePct: 0.25,
+      basePrice: dayData.daPrices[0] ?? firstSip,
+      eventImpact: 0,
+    };
     setState(prev => ({
       ...prev,
       clock: {
@@ -46,6 +56,8 @@ export function useGameState() {
         startTime: t,
         isPaused: true,
       },
+      priceHistory: [initialPrice],
+      currentPrice: initialPrice,
       dayAhead: {
         bids: [],
         results: [],

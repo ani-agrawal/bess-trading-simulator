@@ -60,19 +60,51 @@ export function formatDate(time: number): string {
   return `${days[d.getUTCDay()]} ${d.getUTCDate()} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
 
+// BST: last Sunday of March 01:00 UTC → last Sunday of October 01:00 UTC
+export function isBST(time: number): boolean {
+  const d = new Date(time);
+  const year = d.getUTCFullYear();
+  const month = d.getUTCMonth(); // 0-indexed: March=2, October=9
+
+  if (month > 2 && month < 9) return true;   // Apr–Sep: always BST
+  if (month < 2 || month > 9) return false;   // Nov–Feb: always GMT
+
+  // March: BST starts last Sunday at 01:00 UTC
+  if (month === 2) {
+    const lastSun = 31 - new Date(Date.UTC(year, 2, 31)).getUTCDay();
+    const switchTime = Date.UTC(year, 2, lastSun, 1, 0, 0);
+    return time >= switchTime;
+  }
+
+  // October: BST ends last Sunday at 01:00 UTC
+  const lastSun = 31 - new Date(Date.UTC(year, 9, 31)).getUTCDay();
+  const switchTime = Date.UTC(year, 9, lastSun, 1, 0, 0);
+  return time < switchTime;
+}
+
+// EPEX SPOT GB DA gate closure: 09:20 UK local time
+// BST: 09:20 UK = 08:20 UTC | GMT: 09:20 UK = 09:20 UTC
+function gateClosureUtcHour(time: number): { hour: number; minute: number } {
+  return isBST(time) ? { hour: 8, minute: 20 } : { hour: 9, minute: 20 };
+}
+
 export function getGateClosureTime(currentTime: number): number {
   const d = new Date(currentTime);
-  const gateClosure = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 11, 0, 0));
+  const { hour, minute } = gateClosureUtcHour(currentTime);
+  const gateClosure = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), hour, minute, 0));
 
   if (d.getTime() >= gateClosure.getTime()) {
-    return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1, 11, 0, 0)).getTime();
+    const nextDay = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1, 0, 0, 0);
+    const next = gateClosureUtcHour(nextDay);
+    return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1, next.hour, next.minute, 0)).getTime();
   }
   return gateClosure.getTime();
 }
 
 export function getNextDeliveryDay(currentTime: number): number {
   const d = new Date(currentTime);
-  const gateClosure = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 11, 0, 0));
+  const { hour, minute } = gateClosureUtcHour(currentTime);
+  const gateClosure = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), hour, minute, 0));
 
   if (d.getTime() >= gateClosure.getTime()) {
     return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 2, 0, 0, 0)).getTime();

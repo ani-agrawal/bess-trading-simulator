@@ -67,7 +67,7 @@ export function getScenarioObjective(state: GameState): ScenarioObjective {
     successCriteria = [
       'Do not force multiple low-spread cycles.',
       'Keep SoC flexible around 50%.',
-      'Use frequency/revenue-stack mode rather than pure arbitrage.',
+      'Use frequency or market context mode rather than pure arbitrage.',
     ];
   }
 

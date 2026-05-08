@@ -24,7 +24,7 @@ const TITLES: Record<LessonId, string> = {
   2: 'Day-Ahead',
   3: 'Intraday',
   4: 'Imbalance',
-  5: 'Revenue Stack',
+  5: 'Market Context',
 };
 
 export function getGradebook(state: GameState): Gradebook {

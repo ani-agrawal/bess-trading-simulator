@@ -84,10 +84,10 @@ export const CURRICULUM: CurriculumModule[] = [
   },
   {
     id: 9,
-    title: 'Revenue Stacking',
-    objective: 'Allocate battery capacity across competing revenue streams.',
-    beginnerSummary: 'Choose the best use of the battery each period.',
-    traderSkill: 'Avoid conflicting commitments and maximise risk-adjusted revenue.',
+    title: 'Market Context',
+    objective: 'Understand the different revenue streams available to a BESS asset.',
+    beginnerSummary: 'Overview of BM, frequency response, and triad management.',
+    traderSkill: 'Understand how capacity allocation works across competing services.',
     futureFeatures: ['Capacity allocation board', 'Revenue mix chart', 'Conflict warnings'],
   },
   {

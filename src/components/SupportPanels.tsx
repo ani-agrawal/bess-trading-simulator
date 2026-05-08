@@ -20,6 +20,7 @@ import FrequencyResponsePanel from './FrequencyResponsePanel';
 import ProgressPersistence from './ProgressPersistence';
 import ScenarioExamSelector from './ScenarioExamSelector';
 import ProductStatus from './ProductStatus';
+import LessonAssessment from './LessonAssessment';
 
 type SupportTab = 'coach' | 'risk' | 'review' | 'advanced';
 type TrainingLevel = 'beginner' | 'trader' | 'quant';
@@ -76,8 +77,6 @@ export default function SupportPanels({
           <>
             <RegimeComparison state={state} />
             <WorkflowChecklist state={state} />
-            {!assessmentMode && <DecisionCoach state={state} />}
-            {showExplain && !assessmentMode && <ExplainThisScreen lessonId={lessonId} compact />}
           </>
         )}
 

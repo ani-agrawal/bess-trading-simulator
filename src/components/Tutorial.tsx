@@ -19,13 +19,14 @@ interface Props {
 export default function Tutorial({ currentStep, isActive, onNext, onSkip, steps = TUTORIAL_STEPS }: Props) {
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
 
-  // Lock body scroll while tutorial is active
+  // Lock body scroll while tutorial is active; scroll to top when it ends
   useEffect(() => {
     if (isActive) {
       document.body.style.overflow = 'hidden';
     }
     return () => {
       document.body.style.overflow = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     };
   }, [isActive]);
 
@@ -48,11 +49,13 @@ export default function Tutorial({ currentStep, isActive, onNext, onSkip, steps 
       }
     };
 
-    // Initial calculation + scroll into view
+    // Scroll element into center of viewport before highlighting
     const el = document.getElementById(step.target) ?? document.querySelector(`[data-tutorial="${step.target}"]`);
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+    // Recalculate after scroll settles
+    setTimeout(recalcRect, 400);
     recalcRect();
 
     window.addEventListener('scroll', recalcRect, true);

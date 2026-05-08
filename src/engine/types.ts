@@ -184,8 +184,8 @@ export const GLOSSARY: Record<string, string> = {
   'Round-trip Efficiency': 'Energy lost during cycling. At 90%, storing 100 MWh means 90 MWh available to sell.',
   'Cycle': 'One full charge-discharge. Batteries degrade over cycles — manage cycle count vs revenue.',
   'Settlement Period (SP)': 'Half-hourly block (48 per day) — the fundamental unit of GB electricity trading.',
-  'EPEX SPOT': 'The main day-ahead auction exchange for GB power. Runs daily at ~11am for the next day.',
-  'Day-Ahead (DA)': 'Auction market: bid before gate closure (~11am) for each half-hour of tomorrow. Clearing price set per SP.',
+  'EPEX SPOT': 'The main day-ahead auction exchange for GB power. Gate closure at 09:20 UK time (08:20 UTC in BST, 09:20 UTC in GMT). Results ~30 min later.',
+  'Day-Ahead (DA)': 'Auction market: bid before gate closure (09:20 UK time) for each half-hour of tomorrow. Clearing price set per SP.',
   'Intraday (ID)': 'Continuous trading market. Revise your DA positions as forecasts update. Trades until 1hr before delivery.',
   'SIP': 'System Imbalance Price — the actual settlement price from Elexon. This is what you pay/receive for any imbalance.',
   'NIV': 'Net Imbalance Volume — whether the system was long (oversupplied) or short (undersupplied) in each SP. Key for NIV chasing.',
@@ -200,8 +200,8 @@ export const GLOSSARY: Record<string, string> = {
   'TNUoS': 'Transmission Network Use of System charges. Network charging reforms mean this should be treated carefully when modelling modern BESS revenue.',
   'Frequency Response': 'Dynamic Containment (DC), Dynamic Moderation (DM), Dynamic Regulation (DR) — ancillary services.',
   'DC/DM/DR': 'Frequency response products. Battery must respond within 1s/0.5s. Revenue from availability (£/MW/hr).',
-  'Revenue Stacking': 'Combining DA, ID, BM, frequency response, and Triad management. What Habitat Energy does with AI.',
-  'Gate Closure': 'Deadline for DA bids (~11am D-1). After this, trade intraday or BM only.',
+  'Revenue Stacking': 'Combining DA, ID, BM, frequency response, and Triad management to maximise total asset value. Overview only in this simulator — full simulation coming later.',
+  'Gate Closure': 'Deadline for DA bids (09:20 UK time D-1, i.e. 08:20 UTC in summer / 09:20 UTC in winter). After this, trade intraday or BM only.',
   'Spread': 'Difference between charge and discharge price. Bigger spread = more profit per cycle.',
   'Baseload': 'Minimum overnight demand. Cheapest prices, best time to charge.',
   'Peak': 'Highest demand periods (7-9am, 4-7pm weekdays). Most expensive, best to discharge.',
@@ -234,7 +234,7 @@ export const TUTORIAL_STEPS = [
   },
   {
     title: 'Day-Ahead Market',
-    content: 'The EPEX day-ahead auction is where you plan tomorrow\'s schedule. Before gate closure (11am), submit bids for each settlement period. The tab shows forecast prices — bid to charge at cheap SPs and discharge at expensive ones. This is your primary market.',
+    content: 'The EPEX day-ahead auction is where you plan tomorrow\'s schedule. Before gate closure (09:20 UK time), submit bids for each settlement period. The tab shows forecast prices — bid to charge at cheap SPs and discharge at expensive ones. This is your primary market.',
     target: 'dayahead-tab',
   },
   {
@@ -254,7 +254,7 @@ export const TUTORIAL_STEPS = [
   },
   {
     title: 'Trading Strategies',
-    content: 'Open the Strategy Guide to learn: Arbitrage, NIV Chasing, Intraday Trading, Triad Management, BM Participation, Frequency Response, and Revenue Stacking. Each has detailed explanations and a playable mode. Start with Arbitrage, then try NIV Chasing once you understand SIP.',
+    content: 'Open the Strategy Guide to learn: Arbitrage, NIV Chasing, Intraday Trading, Triad Management, BM Participation, Frequency Response, and Market Context. Each has detailed explanations and a playable mode. Start with Arbitrage, then try NIV Chasing once you understand SIP.',
     target: 'strategies',
   },
   {

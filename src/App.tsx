@@ -24,7 +24,6 @@ import CommitmentWarnings from './components/CommitmentWarnings';
 import EndOfDayReport from './components/EndOfDayReport';
 import ForecastReview from './components/ForecastReview';
 import ScenarioObjective from './components/ScenarioObjective';
-import ExplainThisScreen from './components/ExplainThisScreen';
 import WorkflowChecklist from './components/WorkflowChecklist';
 import RiskLimits from './components/RiskLimits';
 import DecisionCoach from './components/DecisionCoach';
@@ -78,6 +77,7 @@ export default function App() {
         onIntradayDischarge={intradayDischarge}
         onSubmitBmOffer={submitBmOffer}
         onSetMode={setMode}
+        onPlayScenario={playScenario}
       />
     );
   }
@@ -154,13 +154,11 @@ export default function App() {
               <SupportPanels state={state} lessonId={1} showExplain compact />
             </div>
             <div className="grid-revenue">
-              <DailyBriefing state={state} />
-              <ScenarioObjective state={state} />
-              <ExplainThisScreen lessonId={1} compact />
-              <RiskLimits state={state} />
-            </div>
-            <div className="grid-news" id="news">
+              <DecisionCoach state={state} />
               <NewsFeed events={state.events} />
+              <DailyBriefing state={state} />
+              <RiskLimits state={state} />
+              <ScenarioObjective state={state} />
             </div>
             <div className="grid-log">
               <div className="panel">
@@ -206,13 +204,13 @@ export default function App() {
               <SupportPanels state={state} lessonId={2} showExplain compact />
             </div>
             <div className="grid-da-side">
+              <DecisionCoach state={state} />
+              <NewsFeed events={state.events} />
               <DailyBriefing state={state} />
-              <ScenarioObjective state={state} />
               <RegimeComparison state={state} />
               <WorkflowChecklist state={state} />
-              <DecisionCoach state={state} />
-              <ExplainThisScreen lessonId={2} compact />
               <RiskLimits state={state} />
+              <ScenarioObjective state={state} />
             </div>
           </>
         )}
@@ -231,13 +229,13 @@ export default function App() {
               <SupportPanels state={state} lessonId={3} showExplain compact />
             </div>
             <div className="grid-da-side">
+              <DecisionCoach state={state} />
+              <NewsFeed events={state.events} />
               <DailyBriefing state={state} />
-              <ScenarioObjective state={state} />
               <RegimeComparison state={state} />
               <WorkflowChecklist state={state} />
-              <DecisionCoach state={state} />
-              <ExplainThisScreen lessonId={3} compact />
               <RiskLimits state={state} />
+              <ScenarioObjective state={state} />
             </div>
           </>
         )}
@@ -257,15 +255,14 @@ export default function App() {
               <SupportPanels state={state} lessonId={4} showExplain compact />
             </div>
             <div className="grid-analysis-side">
+              <DecisionCoach state={state} />
+              <NewsFeed events={state.events} />
               <DailyBriefing state={state} />
-              <ScenarioObjective state={state} />
               <RegimeComparison state={state} />
               <WorkflowChecklist state={state} />
-              <DecisionCoach state={state} />
-              <ExplainThisScreen lessonId={4} compact />
               <CommitmentWarnings state={state} />
               <RiskLimits state={state} />
-              <NewsFeed events={state.events} />
+              <ScenarioObjective state={state} />
             </div>
           </>
         )}
