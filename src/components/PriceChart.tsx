@@ -6,9 +6,13 @@ import TermTooltip from './TermTooltip';
 interface Props {
   priceHistory: HourlyPrice[];
   currentPrice: HourlyPrice | null;
+  demandForecast?: number[];
+  windForecast?: number[];
+  solarForecast?: number[];
+  currentSp?: number;
 }
 
-export default function PriceChart({ priceHistory, currentPrice }: Props) {
+export default function PriceChart({ priceHistory, currentPrice, demandForecast = [], windForecast = [], solarForecast = [], currentSp = 0 }: Props) {
   // Show current day's data plus last hour of previous day for line continuity
   const lastTs = priceHistory.length > 0 ? priceHistory[priceHistory.length - 1].timestamp : 0;
   const dayStart = new Date(lastTs);
@@ -101,9 +105,18 @@ export default function PriceChart({ priceHistory, currentPrice }: Props) {
       </div>
       {currentPrice && (
         <div className="price-context">
-          <span>Demand: {(currentPrice.demandMw / 1000).toFixed(1)} GW</span>
-          <span>Renewables: {Math.round(currentPrice.renewablePct * 100)}%</span>
-          <span>Base: £{currentPrice.basePrice.toFixed(2)}</span>
+          {demandForecast.length > 0 && demandForecast[currentSp] > 0 ? (
+            <>
+              <span>Demand Forecast: {(demandForecast[currentSp] / 1000).toFixed(1)} GW</span>
+              <span>Wind Forecast: {(windForecast[currentSp] / 1000).toFixed(1)} GW</span>
+              <span>Solar Forecast: {((solarForecast[currentSp] ?? 0) / 1000).toFixed(1)} GW</span>
+            </>
+          ) : (
+            <>
+              <span>Demand: {(currentPrice.demandMw / 1000).toFixed(1)} GW</span>
+              <span>Renewables: {Math.round(currentPrice.renewablePct * 100)}%</span>
+            </>
+          )}
         </div>
       )}
     </div>

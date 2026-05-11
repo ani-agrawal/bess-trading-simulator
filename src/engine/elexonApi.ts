@@ -24,6 +24,12 @@ export interface ElexonDayData {
   daPrices: number[];      // 48 SPs, £/MWh (from MID/APXMIDP)
   sipPrices: number[];     // 48 SPs, system price
   niv: number[];           // 48 SPs, net imbalance volume
+  demandForecast: number[];  // 48 SPs, MW (national demand forecast)
+  windForecast: number[];    // 48 SPs, MW (wind generation forecast)
+  solarForecast: number[];   // 48 SPs, MW (solar generation forecast)
+  demandOutturn: number[];   // 48 SPs, MW (actual demand outturn)
+  windOutturn: number[];     // 48 SPs, MW (actual wind generation)
+  solarOutturn: number[];    // 48 SPs, MW (actual solar generation)
   isComplete: boolean;
 }
 
@@ -54,11 +60,51 @@ async function fetchMID(date: string): Promise<ElexonMID[]> {
   return (data.data ?? []) as ElexonMID[];
 }
 
+async function fetchDemandForecast(date: string): Promise<{ settlementPeriod: number; nationalDemand: number }[]> {
+  const nextDay = new Date(date + 'T00:00:00Z');
+  nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+  const url = `${BASE}/forecast/demand/day-ahead/latest?from=${date}T00:00:00Z&to=${formatDate(nextDay)}T00:00:00Z&format=json`;
+  const data = await fetchJson(url);
+  return (data.data ?? []) as { settlementPeriod: number; nationalDemand: number }[];
+}
+
+async function fetchWindSolarForecast(date: string): Promise<{ settlementPeriod: number; businessType: string; quantity: number }[]> {
+  const nextDay = new Date(date + 'T00:00:00Z');
+  nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+  const url = `${BASE}/forecast/generation/wind-and-solar/day-ahead?from=${date}&to=${formatDate(nextDay)}&processType=day%20ahead&format=json`;
+  const data = await fetchJson(url);
+  return (data.data ?? []) as { settlementPeriod: number; businessType: string; quantity: number }[];
+}
+
+async function fetchDemandOutturn(date: string): Promise<{ settlementPeriod: number; initialDemandOutturn: number }[]> {
+  const url = `${BASE}/demand/outturn?settlementDateFrom=${date}&settlementDateTo=${date}&format=json`;
+  const data = await fetchJson(url);
+  const all = (data.data ?? []) as { settlementDate: string; settlementPeriod: number; initialDemandOutturn: number }[];
+  return all.filter(d => d.settlementDate === date);
+}
+
+interface GenActualRecord {
+  settlementPeriod: number;
+  data: { psrType: string; quantity: number }[];
+}
+
+async function fetchActualGeneration(date: string): Promise<GenActualRecord[]> {
+  const nextDay = new Date(date + 'T00:00:00Z');
+  nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+  const url = `${BASE}/generation/actual/per-type?from=${date}T00:00:00Z&to=${formatDate(nextDay)}T00:00:00Z&format=json`;
+  const data = await fetchJson(url);
+  return (data.data ?? []) as GenActualRecord[];
+}
+
 // Build a complete day's data from Elexon APIs
 export async function fetchDayData(date: string): Promise<ElexonDayData> {
-  const [sysPrices, midData] = await Promise.all([
+  const [sysPrices, midData, demandData, genData, demandActual, genActual] = await Promise.all([
     fetchSystemPrices(date).catch(() => []),
     fetchMID(date).catch(() => []),
+    fetchDemandForecast(date).catch(() => []),
+    fetchWindSolarForecast(date).catch(() => []),
+    fetchDemandOutturn(date).catch(() => []),
+    fetchActualGeneration(date).catch(() => []),
   ]);
 
   // Extract DA prices from APXMIDP provider
@@ -89,9 +135,55 @@ export async function fetchDayData(date: string): Promise<ElexonDayData> {
     }
   }
 
+  // Extract demand forecast
+  const demandForecast = new Array(48).fill(0);
+  for (const d of demandData) {
+    const sp = d.settlementPeriod - 1;
+    if (sp >= 0 && sp < 48) demandForecast[sp] = Math.round(d.nationalDemand ?? 0);
+  }
+
+  // Extract wind and solar forecasts
+  const windForecast = new Array(48).fill(0);
+  const solarForecast = new Array(48).fill(0);
+  for (const d of genData) {
+    const sp = d.settlementPeriod - 1;
+    if (sp >= 0 && sp < 48) {
+      const bt = (d.businessType ?? '').toLowerCase();
+      if (bt.includes('wind')) {
+        windForecast[sp] += Math.round(d.quantity ?? 0);
+      } else if (bt.includes('solar')) {
+        solarForecast[sp] = Math.round(d.quantity ?? 0);
+      }
+    }
+  }
+
+  // Extract actual demand outturn
+  const demandOutturn = new Array(48).fill(0);
+  for (const d of demandActual) {
+    const sp = d.settlementPeriod - 1;
+    if (sp >= 0 && sp < 48) demandOutturn[sp] = Math.round(d.initialDemandOutturn ?? 0);
+  }
+
+  // Extract actual wind and solar generation (nested data structure)
+  const windOutturn = new Array(48).fill(0);
+  const solarOutturn = new Array(48).fill(0);
+  for (const record of genActual) {
+    const sp = record.settlementPeriod - 1;
+    if (sp >= 0 && sp < 48 && record.data) {
+      for (const item of record.data) {
+        const psr = (item.psrType ?? '').toLowerCase();
+        if (psr.includes('wind')) {
+          windOutturn[sp] += Math.round(item.quantity ?? 0);
+        } else if (psr.includes('solar')) {
+          solarOutturn[sp] = Math.round(item.quantity ?? 0);
+        }
+      }
+    }
+  }
+
   const isComplete = sysPrices.length >= 46; // allow for DST days
 
-  return { date, daPrices, sipPrices, niv, isComplete };
+  return { date, daPrices, sipPrices, niv, demandForecast, windForecast, solarForecast, demandOutturn, windOutturn, solarOutturn, isComplete };
 }
 
 // Fetch the most recent complete settlement day (typically D-2 for safety)

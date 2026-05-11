@@ -1,4 +1,5 @@
 import type { GameState } from '../engine/types';
+import { getSettlementPeriod } from '../engine/clock';
 import PriceChart from './PriceChart';
 import BatteryStatus from './BatteryStatus';
 import ChargeDischargeControls from './ChargeDischargeControls';
@@ -17,7 +18,14 @@ export default function TradingCockpit({ state, onCharge, onDischarge, onConfigu
   return (
     <section className="trading-cockpit">
       <div className="cockpit-price">
-        <PriceChart priceHistory={state.priceHistory} currentPrice={state.currentPrice} />
+        <PriceChart
+          priceHistory={state.priceHistory}
+          currentPrice={state.currentPrice}
+          demandForecast={state.dayAhead.demandForecast}
+          windForecast={state.dayAhead.windForecast}
+          solarForecast={state.dayAhead.solarForecast}
+          currentSp={Math.max(0, getSettlementPeriod(state.clock.currentTime) - 1)}
+        />
         <CockpitContextCharts state={state} />
       </div>
       <div className="cockpit-battery">

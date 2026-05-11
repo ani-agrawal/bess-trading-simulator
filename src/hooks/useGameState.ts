@@ -9,7 +9,7 @@ import {
 } from '../engine/gameState';
 import type { BatteryConfig } from '../engine/battery';
 import type { HistoricalDay } from '../data/historicalDays';
-import { fetchLatestDay } from '../engine/elexonApi';
+import { fetchLatestDay, fetchDayData } from '../engine/elexonApi';
 import type { ElexonDayData } from '../engine/elexonApi';
 import { getGateClosureTime, getNextDeliveryDay } from '../engine/clock';
 import { autoSave, loadAutoSave, clearAutoSave, needsRefresh, cacheElexonDay } from '../engine/persistence';
@@ -67,6 +67,12 @@ export function useGameState() {
         forecastPrices: dayData.daPrices,
         sipOutturn: dayData.sipPrices,
         niv: dayData.niv,
+        demandForecast: dayData.demandForecast,
+        windForecast: dayData.windForecast,
+        solarForecast: dayData.solarForecast,
+        demandOutturn: dayData.demandOutturn,
+        windOutturn: dayData.windOutturn,
+        solarOutturn: dayData.solarOutturn,
         revealedPeriods: 0,
         playerSchedule: [],
       },
@@ -110,6 +116,33 @@ export function useGameState() {
         });
     }
   }, []);
+
+  // Fetch new forecasts when sim day changes
+  const simDateRef = useRef('');
+  useEffect(() => {
+    const d = new Date(state.clock.currentTime);
+    const dateStr = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+    if (dateStr === simDateRef.current) return;
+    simDateRef.current = dateStr;
+
+    fetchDayData(dateStr)
+      .then(dayData => {
+        cacheElexonDay(dayData.date, dayData);
+        setState(prev => ({
+          ...prev,
+          dayAhead: {
+            ...prev.dayAhead,
+            forecastPrices: dayData.daPrices.some(p => p !== 0) ? dayData.daPrices : prev.dayAhead.forecastPrices,
+            sipOutturn: dayData.sipPrices.some(p => p !== 0) ? dayData.sipPrices : prev.dayAhead.sipOutturn,
+            niv: dayData.niv.some(v => v !== 0) ? dayData.niv : prev.dayAhead.niv,
+            demandForecast: dayData.demandForecast.some(v => v > 0) ? dayData.demandForecast : prev.dayAhead.demandForecast,
+            windForecast: dayData.windForecast.some(v => v > 0) ? dayData.windForecast : prev.dayAhead.windForecast,
+            solarForecast: dayData.solarForecast.some(v => v > 0) ? dayData.solarForecast : prev.dayAhead.solarForecast,
+          },
+        }));
+      })
+      .catch(() => {});
+  }, [state.clock.currentTime]);
 
   // Autosave every 10 ticks
   useEffect(() => {

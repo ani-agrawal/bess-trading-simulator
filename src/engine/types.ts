@@ -132,6 +132,12 @@ export interface DayAheadState {
   forecastPrices: number[]; // 48 half-hourly DA prices
   sipOutturn: number[]; // 48 half-hourly SIP outturns (revealed as time passes)
   niv: number[]; // 48 NIV values
+  demandForecast: number[]; // 48 half-hourly demand forecast MW
+  windForecast: number[]; // 48 half-hourly wind forecast MW
+  solarForecast: number[]; // 48 half-hourly solar forecast MW
+  demandOutturn: number[]; // 48 half-hourly actual demand MW
+  windOutturn: number[]; // 48 half-hourly actual wind generation MW
+  solarOutturn: number[]; // 48 half-hourly actual solar generation MW
   revealedPeriods: number; // how many SPs have been revealed
   playerSchedule: TradePosition[];
 }
