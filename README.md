@@ -32,7 +32,9 @@ https://trading-sim-two.vercel.app/
 
 ## Data
 
-No API keys needed. Uses the public Elexon BMRS endpoint (`data.elexon.co.uk/bmrs/api/v1`). Loads the most recent complete settlement day on startup and falls back to synthetic data if unavailable.
+No API keys needed. Uses the public Elexon BMRS endpoint (`data.elexon.co.uk/bmrs/api/v1`). Loads the most recent complete settlement day on startup and fetches fresh forecasts on each day rollover. Falls back to synthetic data if unavailable.
+
+**Note:** Some prices, forecasts, or variables may occasionally show as 0 if the Elexon API is unavailable or returns incomplete data. This is a known issue being resolved.
 
 ## Simplifications
 
